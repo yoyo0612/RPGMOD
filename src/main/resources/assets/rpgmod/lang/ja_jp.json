@@ -53,6 +53,7 @@
   "rpgmod.screen.stats.level": "Lv %s　EXP %s",
   "rpgmod.screen.stats.unspent": "残りポイント: %s",
   "rpgmod.screen.stats.row": "%s　値: %s　振り分け: %s（1pt = +%s）",
+  "rpgmod.screen.stats.allocated": "振り分け %s（1pt = +%s）",
 
   "rpgmod.screen.role.title": "ロールを2つ選んでください",
   "rpgmod.screen.role.count": "選んだロール: %s / 2",

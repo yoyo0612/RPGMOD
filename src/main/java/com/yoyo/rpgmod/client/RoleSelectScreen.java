@@ -82,12 +82,19 @@ public class RoleSelectScreen extends Screen {
     }
 
     @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        Ui.drawPanel(graphics, this.width / 2 - 120, this.height / 2 - 116, 240, 246);
+    }
+
+    @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 100, 0xFFFFFF);
-        graphics.drawCenteredString(this.font,
+        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, this.height / 2 - 100, Ui.ACCENT);
+        Ui.drawSeparator(graphics, this.width / 2 - 100, this.height / 2 - 88, 200);
+        Ui.drawCenteredShadow(graphics, this.font,
                 Component.translatable("rpgmod.screen.role.count", selected.size()),
-                this.width / 2, this.height / 2 - 92, 0xAAAAAA);
+                this.width / 2, this.height / 2 - 80 - 14, selected.size() == 2 ? Ui.ACCENT : Ui.SUBTEXT);
     }
 
     /** ロールを選ぶまで Esc で閉じられない。 */

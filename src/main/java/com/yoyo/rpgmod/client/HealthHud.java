@@ -21,7 +21,8 @@ public final class HealthHud {
     private static final int BAR_WIDTH = 182;
     private static final int BAR_HEIGHT = 8;
     private static final int BAR_BACKGROUND = 0xFF303030;
-    private static final int BAR_FILL = 0xFFD02020;
+    private static final int BAR_FILL = 0xFFB01818;
+    private static final int BAR_FILL_LIGHT = 0xFFE04040;
 
     private HealthHud() {
     }
@@ -56,11 +57,17 @@ public final class HealthHud {
         int x = screenWidth / 2 - BAR_WIDTH / 2;
         int y = screenHeight - 50;
 
+        // 枠（暗い金）→ 背景 → 中身（上が明るい赤）→ 下の影
+        graphics.fill(x - 1, y - 1, x + BAR_WIDTH + 1, y + BAR_HEIGHT + 1, Ui.GOLD_DIM);
         graphics.fill(x, y, x + BAR_WIDTH, y + BAR_HEIGHT, BAR_BACKGROUND);
-        graphics.fill(x, y, x + Math.round(BAR_WIDTH * ratio), y + BAR_HEIGHT, BAR_FILL);
+        int fillWidth = Math.round(BAR_WIDTH * ratio);
+        if (fillWidth > 0) {
+            graphics.fill(x, y, x + fillWidth, y + BAR_HEIGHT / 2, BAR_FILL_LIGHT);
+            graphics.fill(x, y + BAR_HEIGHT / 2, x + fillWidth, y + BAR_HEIGHT, BAR_FILL);
+        }
 
         Component label = Component.translatable("rpgmod.hud.hp",
                 (int) Math.ceil(health), Math.round(maxHealth));
-        graphics.drawCenteredString(minecraft.font, label, screenWidth / 2, y - 10, 0xFFFFFF);
+        Ui.drawCenteredShadow(graphics, minecraft.font, label, screenWidth / 2, y - 11, Ui.TEXT);
     }
 }

@@ -9,6 +9,7 @@ import net.minecraft.network.chat.Component;
 import net.neoforged.neoforge.network.PacketDistributor;
 
 import java.util.EnumMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -18,6 +19,8 @@ import java.util.Map;
 public class StatScreen extends Screen {
 
     private static final int ROW_HEIGHT = 24;
+    private static final int PANEL_WIDTH = 344;
+    private static final int PANEL_HEIGHT = 216;
 
     private final Map<Stat, Button> buttons = new EnumMap<>(Stat.class);
 
@@ -33,11 +36,17 @@ public class StatScreen extends Screen {
         for (Stat stat : Stat.values()) {
             Button plus = Button.builder(Component.literal("+1"),
                             b -> PacketDistributor.sendToServer(new StatPayloads.AllocateStatPayload(stat.name())))
-                    .bounds(left + 280, top + index * ROW_HEIGHT, 40, 20)
+                    .bounds(left + 280, top + index * ROW_HEIGHT - 2, 44, 20)
                     .build();
             buttons.put(stat, addRenderableWidget(plus));
             index++;
         }
+    }
+
+    @Override
+    public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
+        super.renderBackground(graphics, mouseX, mouseY, partialTick);
+        Ui.drawPanel(graphics, this.width / 2 - PANEL_WIDTH / 2, this.height / 2 - 100, PANEL_WIDTH, PANEL_HEIGHT);
     }
 
     @Override
@@ -46,24 +55,30 @@ public class StatScreen extends Screen {
         int left = this.width / 2 - 150;
         int top = this.height / 2 - 60;
 
-        graphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 90, 0xFFFFFF);
-        graphics.drawCenteredString(this.font,
+        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, this.height / 2 - 90, Ui.ACCENT);
+        Ui.drawCenteredShadow(graphics, this.font,
                 Component.translatable("rpgmod.screen.stats.level", ClientStats.level(), ClientStats.exp()),
-                this.width / 2, this.height / 2 - 78, 0xAAAAAA);
-        graphics.drawCenteredString(this.font,
-                Component.translatable("rpgmod.screen.stats.unspent", ClientStats.unspent()),
-                this.width / 2, this.height / 2 - 66, 0xFFFF55);
+                this.width / 2, this.height / 2 - 76, Ui.SUBTEXT);
+        Ui.drawSeparator(graphics, left, this.height / 2 - 64, 300);
 
         boolean canAllocate = ClientStats.unspent() > 0;
+        int remaining = ClientStats.unspent();
+        Ui.drawCenteredShadow(graphics, this.font,
+                Component.translatable("rpgmod.screen.stats.unspent", remaining),
+                this.width / 2, top - 34 + 0, canAllocate ? Ui.WARNING : Ui.SUBTEXT);
+
         int index = 0;
         for (Stat stat : Stat.values()) {
-            graphics.drawString(this.font,
-                    Component.translatable("rpgmod.screen.stats.row",
-                            Component.translatable("rpgmod.stat." + stat.name().toLowerCase(java.util.Locale.ROOT)),
-                            ClientStats.value(stat),
-                            ClientStats.points(stat),
-                            stat.weight()),
-                    left, top + index * ROW_HEIGHT + 6, 0xFFFFFF);
+            int y = top + index * ROW_HEIGHT + 4;
+            Ui.drawShadow(graphics, this.font,
+                    Component.translatable("rpgmod.stat." + stat.name().toLowerCase(Locale.ROOT)),
+                    left, y, Ui.TEXT);
+            Ui.drawShadow(graphics, this.font,
+                    Component.literal(String.valueOf(ClientStats.value(stat))),
+                    left + 150, y, Ui.ACCENT);
+            Ui.drawShadow(graphics, this.font,
+                    Component.translatable("rpgmod.screen.stats.allocated", ClientStats.points(stat), stat.weight()),
+                    left + 190, y, Ui.SUBTEXT);
             buttons.get(stat).active = canAllocate;
             index++;
         }

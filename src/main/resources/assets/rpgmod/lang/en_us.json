@@ -53,6 +53,7 @@
   "rpgmod.screen.stats.level": "Lv %s  EXP %s",
   "rpgmod.screen.stats.unspent": "Remaining points: %s",
   "rpgmod.screen.stats.row": "%s  value: %s  allocated: %s (1pt = +%s)",
+  "rpgmod.screen.stats.allocated": "allocated %s (1pt = +%s)",
 
   "rpgmod.screen.role.title": "Choose 2 roles",
   "rpgmod.screen.role.count": "Selected roles: %s / 2",
