@@ -72,4 +72,18 @@ public final class DamageCalculator {
         }
         return (int) Math.floor(mag * methodCoefficient * (1.0 + healBonus) + 1e-9);
     }
+
+    /**
+     * 魔法を使わない回復量 = 手段の固定値 × （1 + 回復量の補正%）。MAG は関係しない。
+     *
+     * @param fixedAmount 手段ごとの固定値
+     * @param healBonus   回復量の補正（例: +20% なら 0.2）
+     * @return 回復量（整数、切り捨て）
+     */
+    public static int fixedHealAmount(int fixedAmount, double healBonus) {
+        if (fixedAmount <= 0) {
+            return 0;
+        }
+        return (int) Math.floor(fixedAmount * (1.0 + healBonus) + 1e-9);
+    }
 }

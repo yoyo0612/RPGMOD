@@ -55,8 +55,12 @@ public final class DamageCalculatorCheck {
 
         // 回復: MAG 10、回復補正 +20% → 12
         check("回復 魔法 1.0・MAG 10 + 20% → 12", DamageCalculator.healAmount(10, 1.0, 0.2) == 12);
-        check("回復 ポーション 0.5・MAG 10 → 5", DamageCalculator.healAmount(10, 0.5, 0.0) == 5);
+        check("回復 係数 0.5・MAG 10 → 5", DamageCalculator.healAmount(10, 0.5, 0.0) == 5);
         check("回復 MAG 0 → 0", DamageCalculator.healAmount(0, 1.0, 0.2) == 0);
+
+        // 魔法を使わない回復: 固定値 × (1 + 補正)、MAG に依存しない
+        check("固定回復 10 + 20% → 12", DamageCalculator.fixedHealAmount(10, 0.2) == 12);
+        check("固定回復 0 → 0", DamageCalculator.fixedHealAmount(0, 0.2) == 0);
 
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");
