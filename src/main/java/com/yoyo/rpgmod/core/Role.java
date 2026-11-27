@@ -12,6 +12,26 @@ public enum Role {
     MARKSMAN,
     SUPPORT;
 
+    /** 画面に表示する名前。 */
+    public String label() {
+        switch (this) {
+            case FIGHTER:
+                return "ファイター";
+            case TANK:
+                return "タンク";
+            case MAGE:
+                return "メイジ";
+            case ASSASSIN:
+                return "アサシン";
+            case MARKSMAN:
+                return "マークスマン";
+            case SUPPORT:
+                return "サポート";
+            default:
+                return name();
+        }
+    }
+
     /** このロールの初期ボーナス（仮）。ロールに関係のないステータスは 0。 */
     public int bonus(Stat stat) {
         switch (this) {

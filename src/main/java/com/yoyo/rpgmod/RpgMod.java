@@ -4,7 +4,9 @@ import com.yoyo.rpgmod.combat.DamageCalculator;
 import com.yoyo.rpgmod.core.DeathPenalty;
 import com.yoyo.rpgmod.core.Job;
 import com.yoyo.rpgmod.core.JobBalancer;
+import com.yoyo.rpgmod.client.ClientHandlers;
 import com.yoyo.rpgmod.core.Stat;
+import com.yoyo.rpgmod.network.RolePayloads;
 import com.yoyo.rpgmod.profile.JobCounts;
 import com.yoyo.rpgmod.profile.PlayerProfile;
 import net.minecraft.server.level.ServerPlayer;
@@ -19,6 +21,9 @@ import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
+import net.neoforged.neoforge.network.PacketDistributor;
+import net.neoforged.neoforge.network.event.RegisterPayloadHandlersEvent;
+import net.neoforged.neoforge.network.registration.PayloadRegistrar;
 import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
@@ -44,27 +49,47 @@ public class RpgMod {
 
     public RpgMod(IEventBus modEventBus) {
         ATTACHMENTS.register(modEventBus);
+        modEventBus.addListener(this::registerPayloads);
 
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
+        RoleGate.register();
     }
 
-    /** 初回参加時に役職を自動で割り当てる（変更不可）。 */
+    /** ロール選択の通信を登録する。 */
+    private void registerPayloads(RegisterPayloadHandlersEvent event) {
+        PayloadRegistrar registrar = event.registrar("1");
+        registrar.playToClient(
+                RolePayloads.OpenRoleSelectPayload.TYPE,
+                RolePayloads.OpenRoleSelectPayload.STREAM_CODEC,
+                ClientHandlers::handleOpenRoleSelect);
+        registrar.playToServer(
+                RolePayloads.SelectRolesPayload.TYPE,
+                RolePayloads.SelectRolesPayload.STREAM_CODEC,
+                RolePayloads::handleSelectRoles);
+    }
+
+    /**
+     * 初回参加時に、役職を自動で割り当てる（変更不可）。
+     * ロールを未選択なら、選択画面を開く。
+     */
     private void onPlayerLoggedIn(PlayerEvent.PlayerLoggedInEvent event) {
         if (!(event.getEntity() instanceof ServerPlayer player)) {
             return;
         }
         PlayerProfile profile = player.getData(PROFILE.get());
-        if (profile.job() != null) {
-            return;
+        if (profile.job() == null) {
+            JobCounts counts = player.getServer().overworld().getDataStorage()
+                    .computeIfAbsent(JobCounts.FACTORY, JobCounts.NAME);
+            Job job = JobBalancer.pick(counts.counts(), RANDOM);
+            counts.increment(job);
+            profile.assignJob(job);
+            player.setData(PROFILE.get(), profile);
         }
-        JobCounts counts = player.getServer().overworld().getDataStorage()
-                .computeIfAbsent(JobCounts.FACTORY, JobCounts.NAME);
-        Job job = JobBalancer.pick(counts.counts(), RANDOM);
-        counts.increment(job);
-        profile.assignJob(job);
-        player.setData(PROFILE.get(), profile);
+        if (!profile.hasSelectedRoles()) {
+            PacketDistributor.sendToPlayer(player, new RolePayloads.OpenRoleSelectPayload());
+        }
     }
 
     /**

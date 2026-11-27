@@ -56,10 +56,24 @@ public final class PlayerProfile {
         return List.copyOf(roles);
     }
 
-    /** ロールを設定する（2つ選ぶ。選び直しは UI 側で禁止する）。 */
-    public void setRoles(List<Role> newRoles) {
+    /** ロールを2つ選び終えているか。 */
+    public boolean hasSelectedRoles() {
+        return roles.size() == 2;
+    }
+
+    /**
+     * ロールを設定する。ちょうど2つ、重複なし、未選択のときだけ成功する。
+     *
+     * @return 設定できたら true
+     */
+    public boolean selectRoles(Role first, Role second) {
+        if (hasSelectedRoles() || first == second) {
+            return false;
+        }
         roles.clear();
-        roles.addAll(newRoles);
+        roles.add(first);
+        roles.add(second);
+        return true;
     }
 
     // ---- ステータス ----
