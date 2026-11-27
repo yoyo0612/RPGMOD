@@ -2,6 +2,8 @@ package com.yoyo.rpgmod;
 
 import com.yoyo.rpgmod.combat.DamageCalculator;
 import com.yoyo.rpgmod.core.DeathPenalty;
+import com.yoyo.rpgmod.core.Experience;
+import com.yoyo.rpgmod.core.Rarity;
 import com.yoyo.rpgmod.core.Job;
 import com.yoyo.rpgmod.core.JobBalancer;
 import com.yoyo.rpgmod.client.ClientHandlers;
@@ -58,6 +60,7 @@ public class RpgMod {
         NeoForge.EVENT_BUS.addListener(this::onPlayerLoggedIn);
         NeoForge.EVENT_BUS.addListener(this::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
+        NeoForge.EVENT_BUS.addListener(this::onMobKilled);
         RoleGate.register();
         if (FMLEnvironment.dist == Dist.CLIENT) {
             setupClient(modEventBus);
@@ -154,6 +157,25 @@ public class RpgMod {
 
         int result = DamageCalculator.finalDamage(physical, magicPart, 1.0, ar, mr);
         event.setAmount(result);
+    }
+
+    /**
+     * 敵を倒したときの経験値。プレイヤーの撃破は対象外（PvP の扱いは未決定）。
+     * 敵のレベルとレア度は、MODの敵を作るまで仮に Lv1・Common とする。
+     * 分配は、チームが実装されるまで撃破者だけに与える。
+     */
+    private void onMobKilled(LivingDeathEvent event) {
+        if (event.getEntity() instanceof ServerPlayer) {
+            return;
+        }
+        if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
+            return;
+        }
+        PlayerProfile profile = killer.getData(PROFILE.get());
+        int reward = Experience.killReward(1, Rarity.COMMON, profile.level());
+        profile.addExperience(reward);
+        killer.setData(PROFILE.get(), profile);
+        StatPayloads.sendSync(killer);
     }
 
     /** 死亡ペナルティ（振り分け済みの総ポイントの10%分を抽選で減らす）。 */

@@ -86,6 +86,15 @@ public final class CoreCheck {
         check("最大レベルでは経験値を蓄えない", capped.level() == Leveling.MAX_LEVEL && capped.exp() == 0 && capped.pointsGained() == 0);
         check("必要経験値は 100 × レベル", Leveling.requiredExp(5) == 500);
 
+        // 撃破経験値
+        check("撃破: Lv12 Rare（自分 Lv10）→ 288", Experience.killReward(12, Rarity.RARE, 10) == 288);
+        check("撃破: Lv12 Legendary（自分 Lv10）→ 2304", Experience.killReward(12, Rarity.LEGENDARY, 10) == 2304);
+        check("撃破: Lv5 Common（自分 Lv10）→ 25", Experience.killReward(5, Rarity.COMMON, 10) == 25);
+        check("撃破: 格下すぎても最低 1", Experience.killReward(1, Rarity.COMMON, 100) == 1);
+        check("分配: 10 を 3 人で 3", Experience.share(10, 3) == 3);
+        check("分配: 2 を 5 人で最低 1", Experience.share(2, 5) == 1);
+        check("分配: 0 人なら 0", Experience.share(10, 0) == 0);
+
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");
         } else {
