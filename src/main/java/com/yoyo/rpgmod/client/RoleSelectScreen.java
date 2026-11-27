@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.EnumMap;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,7 +28,12 @@ public class RoleSelectScreen extends Screen {
     private Button confirmButton;
 
     public RoleSelectScreen() {
-        super(Component.literal("ロールを2つ選んでください"));
+        super(Component.translatable("rpgmod.screen.role.title"));
+    }
+
+    /** ロールの表示名の翻訳キー（lang ファイルに対応）。 */
+    static String roleKey(Role role) {
+        return "rpgmod.role." + role.name().toLowerCase(Locale.ROOT);
     }
 
     @Override
@@ -36,13 +42,13 @@ public class RoleSelectScreen extends Screen {
         int top = this.height / 2 - 80;
         int index = 0;
         for (Role role : Role.values()) {
-            Button button = Button.builder(Component.literal(role.label()), b -> toggle(role))
+            Button button = Button.builder(Component.translatable(roleKey(role)), b -> toggle(role))
                     .bounds(left, top + index * 24, 200, 20)
                     .build();
             buttons.put(role, addRenderableWidget(button));
             index++;
         }
-        confirmButton = addRenderableWidget(Button.builder(Component.literal("決定"), b -> confirm())
+        confirmButton = addRenderableWidget(Button.builder(Component.translatable("rpgmod.screen.role.confirm"), b -> confirm())
                 .bounds(left, top + index * 24 + 12, 200, 20)
                 .build());
         updateButtons();
@@ -60,8 +66,8 @@ public class RoleSelectScreen extends Screen {
     private void updateButtons() {
         for (Map.Entry<Role, Button> entry : buttons.entrySet()) {
             Role role = entry.getKey();
-            String mark = selected.contains(role) ? "[選択中] " : "";
-            entry.getValue().setMessage(Component.literal(mark + role.label()));
+            String key = selected.contains(role) ? "rpgmod.screen.role.selected" : "rpgmod.screen.role.unselected";
+            entry.getValue().setMessage(Component.translatable(key, Component.translatable(roleKey(role))));
         }
         confirmButton.active = selected.size() == 2;
     }
@@ -80,7 +86,7 @@ public class RoleSelectScreen extends Screen {
         super.render(graphics, mouseX, mouseY, partialTick);
         graphics.drawCenteredString(this.font, this.title, this.width / 2, this.height / 2 - 100, 0xFFFFFF);
         graphics.drawCenteredString(this.font,
-                Component.literal("選んだロール: " + selected.size() + " / 2"),
+                Component.translatable("rpgmod.screen.role.count", selected.size()),
                 this.width / 2, this.height / 2 - 92, 0xAAAAAA);
     }
 

@@ -1,0 +1,19 @@
+{
+  "rpgmod.role.fighter": "Fighter",
+  "rpgmod.role.tank": "Tank",
+  "rpgmod.role.mage": "Mage",
+  "rpgmod.role.assassin": "Assassin",
+  "rpgmod.role.marksman": "Marksman",
+  "rpgmod.role.support": "Support",
+
+  "rpgmod.job.miner": "Miner",
+  "rpgmod.job.builder": "Builder",
+  "rpgmod.job.harvester": "Harvester",
+  "rpgmod.job.witch": "Witch",
+
+  "rpgmod.screen.role.title": "Choose 2 roles",
+  "rpgmod.screen.role.count": "Selected roles: %s / 2",
+  "rpgmod.screen.role.selected": "[Selected] %s",
+  "rpgmod.screen.role.unselected": "%s",
+  "rpgmod.screen.role.confirm": "Confirm"
+}

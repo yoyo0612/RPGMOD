@@ -1,0 +1,19 @@
+{
+  "rpgmod.role.fighter": "ファイター",
+  "rpgmod.role.tank": "タンク",
+  "rpgmod.role.mage": "メイジ",
+  "rpgmod.role.assassin": "アサシン",
+  "rpgmod.role.marksman": "マークスマン",
+  "rpgmod.role.support": "サポート",
+
+  "rpgmod.job.miner": "マイナー",
+  "rpgmod.job.builder": "ビルダー",
+  "rpgmod.job.harvester": "ハーベスター",
+  "rpgmod.job.witch": "ウィッチ",
+
+  "rpgmod.screen.role.title": "ロールを2つ選んでください",
+  "rpgmod.screen.role.count": "選んだロール: %s / 2",
+  "rpgmod.screen.role.selected": "[選択中] %s",
+  "rpgmod.screen.role.unselected": "%s",
+  "rpgmod.screen.role.confirm": "決定"
+}
