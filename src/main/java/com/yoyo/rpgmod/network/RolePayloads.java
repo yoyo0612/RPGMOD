@@ -58,6 +58,7 @@ public final class RolePayloads {
             PlayerProfile profile = player.getData(RpgMod.PROFILE.get());
             if (profile.selectRoles(payload.first(), payload.second())) {
                 player.setData(RpgMod.PROFILE.get(), profile);
+                RpgMod.applyMaxHealth(player);
             }
         });
     }

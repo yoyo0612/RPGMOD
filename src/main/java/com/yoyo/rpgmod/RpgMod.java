@@ -8,12 +8,15 @@ import com.yoyo.rpgmod.core.Job;
 import com.yoyo.rpgmod.core.JobBalancer;
 import com.yoyo.rpgmod.client.ClientHandlers;
 import com.yoyo.rpgmod.client.ClientSetup;
+import com.yoyo.rpgmod.client.HealthHud;
 import com.yoyo.rpgmod.core.Stat;
 import com.yoyo.rpgmod.network.RolePayloads;
 import com.yoyo.rpgmod.network.StatPayloads;
 import com.yoyo.rpgmod.profile.JobCounts;
 import com.yoyo.rpgmod.profile.PlayerProfile;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.entity.ai.attributes.AttributeInstance;
+import net.minecraft.world.entity.ai.attributes.Attributes;
 import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
@@ -61,6 +64,7 @@ public class RpgMod {
         NeoForge.EVENT_BUS.addListener(this::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(this::onMobKilled);
+        NeoForge.EVENT_BUS.addListener(this::onRespawn);
         RoleGate.register();
         if (FMLEnvironment.dist == Dist.CLIENT) {
             setupClient(modEventBus);
@@ -97,6 +101,8 @@ public class RpgMod {
     private void setupClient(IEventBus modEventBus) {
         modEventBus.addListener(ClientSetup::registerKeys);
         NeoForge.EVENT_BUS.addListener(ClientSetup::onClientTick);
+        modEventBus.addListener(HealthHud::registerLayers);
+        NeoForge.EVENT_BUS.addListener(HealthHud::hideVanillaHearts);
     }
 
     /**
@@ -119,6 +125,17 @@ public class RpgMod {
         if (!profile.hasSelectedRoles()) {
             PacketDistributor.sendToPlayer(player, new RolePayloads.OpenRoleSelectPayload());
         }
+        applyMaxHealth(player);
+        StatPayloads.sendSync(player);
+    }
+
+    /** 死亡後の復活時は、新しい HP の最大値で全快にする。 */
+    private void onRespawn(PlayerEvent.PlayerRespawnEvent event) {
+        if (!(event.getEntity() instanceof ServerPlayer player)) {
+            return;
+        }
+        applyMaxHealth(player);
+        player.setHealth(player.getMaxHealth());
         StatPayloads.sendSync(player);
     }
 
@@ -157,6 +174,21 @@ public class RpgMod {
 
         int result = DamageCalculator.finalDamage(physical, magicPart, 1.0, ar, mr);
         event.setAmount(result);
+    }
+
+    /**
+     * ステータスの HP を、ゲーム内の体力の最大値に反映する。
+     * 体力の最大値が現在値より小さくなったら、現在値を下げる。
+     */
+    public static void applyMaxHealth(ServerPlayer player) {
+        PlayerProfile profile = player.getData(PROFILE.get());
+        AttributeInstance maxHealth = player.getAttribute(Attributes.MAX_HEALTH);
+        if (maxHealth != null) {
+            maxHealth.setBaseValue(profile.value(Stat.HP));
+        }
+        if (player.getHealth() > player.getMaxHealth()) {
+            player.setHealth(player.getMaxHealth());
+        }
     }
 
     /**

@@ -18,6 +18,8 @@
   "rpgmod.stat.mag": "MAG（魔力）",
   "rpgmod.stat.mp": "MP（魔力量）",
 
+  "rpgmod.hud.hp": "HP %s / %s",
+
   "rpgmod.screen.stats.title": "ステータス振り分け",
   "rpgmod.screen.stats.level": "Lv %s　EXP %s",
   "rpgmod.screen.stats.unspent": "残りポイント: %s",

@@ -89,6 +89,7 @@ public final class StatPayloads {
             PlayerProfile profile = player.getData(RpgMod.PROFILE.get());
             if (profile.allocate(stat)) {
                 player.setData(RpgMod.PROFILE.get(), profile);
+                RpgMod.applyMaxHealth(player);
             }
             sendSync(player);
         });

@@ -18,6 +18,8 @@
   "rpgmod.stat.mag": "MAG (Magic Power)",
   "rpgmod.stat.mp": "MP (Mana)",
 
+  "rpgmod.hud.hp": "HP %s / %s",
+
   "rpgmod.screen.stats.title": "Allocate Stats",
   "rpgmod.screen.stats.level": "Lv %s  EXP %s",
   "rpgmod.screen.stats.unspent": "Remaining points: %s",
