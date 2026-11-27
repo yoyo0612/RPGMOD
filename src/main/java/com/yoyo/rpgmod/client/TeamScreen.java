@@ -70,7 +70,7 @@ public class TeamScreen extends Screen {
     @Override
     public void renderBackground(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.renderBackground(graphics, mouseX, mouseY, partialTick);
-        Ui.drawPanel(graphics, this.width / 2 - 130, this.height / 2 - 90, 260, 200);
+        Ui.drawPanel(graphics, this.width / 2 - 130, this.height / 2 - 94, 260, 208);
     }
 
     @Override
@@ -81,8 +81,9 @@ public class TeamScreen extends Screen {
         boolean inTeam = ClientTeam.inTeam();
         boolean invited = !ClientTeam.inviteFrom().isEmpty();
 
-        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, top - 20, Ui.ACCENT);
-        Ui.drawSeparator(graphics, left, top - 6, WIDTH);
+        // 上から順に: タイトル → 区切り → 状態の文字（入力欄より上）→ 入力欄・ボタン
+        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, top - 26, Ui.ACCENT);
+        Ui.drawSeparator(graphics, left, top - 12, WIDTH);
 
         // 未所属のときだけ作成欄、所属のときは一覧
         nameBox.visible = !inTeam;
@@ -99,23 +100,23 @@ public class TeamScreen extends Screen {
             if (invited) {
                 Ui.drawShadow(graphics, this.font,
                         Component.translatable("rpgmod.screen.team.invited_from", ClientTeam.inviteFrom()),
-                        left, top + 6, Ui.WARNING);
+                        left, top - 4, Ui.WARNING);
             } else {
                 Ui.drawShadow(graphics, this.font, Component.translatable("rpgmod.screen.team.none"),
-                        left, top + 6, Ui.SUBTEXT);
+                        left, top - 4, Ui.SUBTEXT);
             }
             return;
         }
 
         Ui.drawShadow(graphics, this.font,
                 Component.translatable("rpgmod.screen.team.current", ClientTeam.teamName()),
-                left, top + 6, Ui.ACCENT);
+                left, top - 4, Ui.ACCENT);
         List<String> members = ClientTeam.memberNames();
         for (int i = 0; i < members.size(); i++) {
             Component line = i == 0
                     ? Component.translatable("rpgmod.screen.team.leader_row", members.get(i))
                     : Component.literal(members.get(i));
-            Ui.drawShadow(graphics, this.font, line, left, top + 24 + i * 10, i == 0 ? Ui.ACCENT : Ui.TEXT);
+            Ui.drawShadow(graphics, this.font, line, left, top + 12 + i * 10, i == 0 ? Ui.ACCENT : Ui.TEXT);
         }
     }
 }

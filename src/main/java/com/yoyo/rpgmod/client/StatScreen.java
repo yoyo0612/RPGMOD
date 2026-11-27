@@ -19,7 +19,7 @@ import java.util.Map;
 public class StatScreen extends Screen {
 
     private static final int ROW_HEIGHT = 24;
-    private static final int PANEL_WIDTH = 344;
+    private static final int PANEL_WIDTH = 400;
     private static final int PANEL_HEIGHT = 216;
 
     private final Map<Stat, Button> buttons = new EnumMap<>(Stat.class);
@@ -30,13 +30,13 @@ public class StatScreen extends Screen {
 
     @Override
     protected void init() {
-        int left = this.width / 2 - 150;
-        int top = this.height / 2 - 60;
+        int left = this.width / 2 - 180;
+        int top = this.height / 2 - 40;
         int index = 0;
         for (Stat stat : Stat.values()) {
             Button plus = Button.builder(Component.literal("+1"),
                             b -> PacketDistributor.sendToServer(new StatPayloads.AllocateStatPayload(stat.name())))
-                    .bounds(left + 280, top + index * ROW_HEIGHT - 2, 44, 20)
+                    .bounds(left + 330, top + index * ROW_HEIGHT - 2, 40, 20)
                     .build();
             buttons.put(stat, addRenderableWidget(plus));
             index++;
@@ -52,20 +52,20 @@ public class StatScreen extends Screen {
     @Override
     public void render(GuiGraphics graphics, int mouseX, int mouseY, float partialTick) {
         super.render(graphics, mouseX, mouseY, partialTick);
-        int left = this.width / 2 - 150;
-        int top = this.height / 2 - 60;
+        int left = this.width / 2 - 180;
+        int top = this.height / 2 - 40;
 
-        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, this.height / 2 - 90, Ui.ACCENT);
+        // 上から順に: タイトル → Lv・EXP → 残りポイント → 区切り → 各ステータス
+        Ui.drawCenteredShadow(graphics, this.font, this.title, this.width / 2, this.height / 2 - 92, Ui.ACCENT);
         Ui.drawCenteredShadow(graphics, this.font,
                 Component.translatable("rpgmod.screen.stats.level", ClientStats.level(), ClientStats.exp()),
-                this.width / 2, this.height / 2 - 76, Ui.SUBTEXT);
-        Ui.drawSeparator(graphics, left, this.height / 2 - 64, 300);
-
+                this.width / 2, this.height / 2 - 79, Ui.SUBTEXT);
         boolean canAllocate = ClientStats.unspent() > 0;
         int remaining = ClientStats.unspent();
         Ui.drawCenteredShadow(graphics, this.font,
                 Component.translatable("rpgmod.screen.stats.unspent", remaining),
-                this.width / 2, top - 34 + 0, canAllocate ? Ui.WARNING : Ui.SUBTEXT);
+                this.width / 2, this.height / 2 - 66, canAllocate ? Ui.WARNING : Ui.SUBTEXT);
+        Ui.drawSeparator(graphics, left, this.height / 2 - 55, 340);
 
         int index = 0;
         for (Stat stat : Stat.values()) {
@@ -75,10 +75,10 @@ public class StatScreen extends Screen {
                     left, y, Ui.TEXT);
             Ui.drawShadow(graphics, this.font,
                     Component.literal(String.valueOf(ClientStats.value(stat))),
-                    left + 150, y, Ui.ACCENT);
+                    left + 130, y, Ui.ACCENT);
             Ui.drawShadow(graphics, this.font,
                     Component.translatable("rpgmod.screen.stats.allocated", ClientStats.points(stat), stat.weight()),
-                    left + 190, y, Ui.SUBTEXT);
+                    left + 170, y, Ui.SUBTEXT);
             buttons.get(stat).active = canAllocate;
             index++;
         }
