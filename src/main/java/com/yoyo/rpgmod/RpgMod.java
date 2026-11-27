@@ -12,6 +12,7 @@ import com.yoyo.rpgmod.client.HealthHud;
 import com.yoyo.rpgmod.core.Stat;
 import com.yoyo.rpgmod.network.RolePayloads;
 import com.yoyo.rpgmod.network.StatPayloads;
+import com.yoyo.rpgmod.network.TeamPayloads;
 import com.yoyo.rpgmod.profile.JobCounts;
 import com.yoyo.rpgmod.profile.PlayerProfile;
 import net.minecraft.server.level.ServerPlayer;
@@ -28,6 +29,7 @@ import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
+import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
 import net.neoforged.neoforge.event.entity.player.PlayerEvent;
 import net.neoforged.neoforge.network.PacketDistributor;
@@ -37,6 +39,7 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 import net.neoforged.neoforge.registries.NeoForgeRegistries;
 
+import java.util.List;
 import java.util.Random;
 
 @Mod(RpgMod.MOD_ID)
@@ -65,6 +68,8 @@ public class RpgMod {
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
         NeoForge.EVENT_BUS.addListener(this::onMobKilled);
         NeoForge.EVENT_BUS.addListener(this::onRespawn);
+        NeoForge.EVENT_BUS.addListener(this::onMobDrops);
+        NeoForge.EVENT_BUS.addListener(TeamEffects::blockFriendlyExplosion);
         RoleGate.register();
         if (FMLEnvironment.dist == Dist.CLIENT) {
             setupClient(modEventBus);
@@ -95,6 +100,15 @@ public class RpgMod {
                 StatPayloads.AllocateStatPayload.TYPE,
                 StatPayloads.AllocateStatPayload.STREAM_CODEC,
                 StatPayloads::handleAllocate);
+
+        registrar.playToClient(
+                TeamPayloads.TeamSyncPayload.TYPE,
+                TeamPayloads.TeamSyncPayload.STREAM_CODEC,
+                ClientHandlers::handleSyncTeam);
+        registrar.playToServer(
+                TeamPayloads.TeamActionPayload.TYPE,
+                TeamPayloads.TeamActionPayload.STREAM_CODEC,
+                TeamPayloads::handleAction);
     }
 
     /** クライアントだけのキー操作を登録する（サーバーでは実行しない）。 */
@@ -127,6 +141,7 @@ public class RpgMod {
         }
         applyMaxHealth(player);
         StatPayloads.sendSync(player);
+        TeamPayloads.sendSync(player);
     }
 
     /** 死亡後の復活時は、新しい HP の最大値で全快にする。 */
@@ -203,11 +218,26 @@ public class RpgMod {
         if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
             return;
         }
-        PlayerProfile profile = killer.getData(PROFILE.get());
-        int reward = Experience.killReward(1, Rarity.COMMON, profile.level());
-        profile.addExperience(reward);
-        killer.setData(PROFILE.get(), profile);
-        StatPayloads.sendSync(killer);
+        int reward = Experience.killReward(1, Rarity.COMMON, killer.getData(PROFILE.get()).level());
+        List<ServerPlayer> recipients = TeamEffects.xpRecipients(killer);
+        int share = Experience.share(reward, recipients.size());
+        for (ServerPlayer recipient : recipients) {
+            PlayerProfile profile = recipient.getData(PROFILE.get());
+            profile.addExperience(share);
+            recipient.setData(PROFILE.get(), profile);
+            StatPayloads.sendSync(recipient);
+        }
+    }
+
+    /** 戦利品をチームの全員に配る（撃破者以外はコピーを受け取る）。 */
+    private void onMobDrops(LivingDropsEvent event) {
+        if (event.getEntity() instanceof ServerPlayer) {
+            return;
+        }
+        if (!(event.getSource().getEntity() instanceof ServerPlayer killer)) {
+            return;
+        }
+        TeamEffects.shareDrops(killer, event.getDrops());
     }
 
     /** 死亡ペナルティ（振り分け済みの総ポイントの10%分を抽選で減らす）。 */

@@ -22,20 +22,33 @@ public final class ClientSetup {
             GLFW.GLFW_KEY_K,
             "key.categories.rpgmod");
 
+    public static final KeyMapping OPEN_TEAM = new KeyMapping(
+            "key.rpgmod.open_team",
+            KeyConflictContext.IN_GAME,
+            InputConstants.Type.KEYSYM,
+            GLFW.GLFW_KEY_T,
+            "key.categories.rpgmod");
+
     private ClientSetup() {
     }
 
     public static void registerKeys(RegisterKeyMappingsEvent event) {
         event.register(OPEN_STATS);
+        event.register(OPEN_TEAM);
     }
 
-    /** K キーでステータス画面を開く。他の画面が開いているときは開かない。 */
+    /** K でステータス画面、T でチーム画面を開く。他の画面が開いているときは開かない。 */
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         while (OPEN_STATS.consumeClick()) {
             if (minecraft.player != null && minecraft.screen == null) {
                 minecraft.setScreen(new StatScreen());
                 PacketDistributor.sendToServer(new StatPayloads.RequestStatsPayload());
+            }
+        }
+        while (OPEN_TEAM.consumeClick()) {
+            if (minecraft.player != null && minecraft.screen == null) {
+                minecraft.setScreen(new TeamScreen());
             }
         }
     }

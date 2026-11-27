@@ -3,6 +3,7 @@ package com.yoyo.rpgmod.core;
 import java.util.EnumMap;
 import java.util.Map;
 import java.util.Random;
+import java.util.UUID;
 
 /**
  * core パッケージ（ステータス・ロール・役職・死亡ペナルティ）の確認。
@@ -94,6 +95,29 @@ public final class CoreCheck {
         check("分配: 10 を 3 人で 3", Experience.share(10, 3) == 3);
         check("分配: 2 を 5 人で最低 1", Experience.share(2, 5) == 1);
         check("分配: 0 人なら 0", Experience.share(10, 0) == 0);
+
+        // チーム
+        TeamBook book = new TeamBook();
+        UUID a = UUID.randomUUID();
+        UUID b = UUID.randomUUID();
+        UUID c = UUID.randomUUID();
+        check("チーム作成", book.create(a, "A", "赤") == TeamBook.Result.OK);
+        check("同じ人は二重に作れない", book.create(a, "A", "青") == TeamBook.Result.ALREADY_IN_TEAM);
+        check("同名のチームは作れない（大文字小文字を区別しない）", book.create(b, "B", "RED") == TeamBook.Result.OK
+                && book.create(c, "C", "red") == TeamBook.Result.NAME_TAKEN);
+        check("名前は空・長すぎると不可", book.create(c, "C", "") == TeamBook.Result.INVALID_NAME
+                && book.create(c, "C", "123456789012345") == TeamBook.Result.INVALID_NAME);
+        check("招待は未所属の相手に", book.invite(a, c, "C") == TeamBook.Result.OK);
+        check("招待が届いている", book.pendingInviteTeamName(c).orElse("").equals("赤"));
+        check("二重招待は不可", book.invite(a, c, "C") == TeamBook.Result.ALREADY_INVITED);
+        check("所属者は招待できない", book.invite(a, b, "B") == TeamBook.Result.TARGET_IN_TEAM);
+        check("承認で参加", book.accept(c, "C") == TeamBook.Result.OK && book.teamOf(c).isPresent());
+        check("承認後は招待が消える", book.pendingInviteTeamName(c).isEmpty());
+        check("リーダーが抜けると残りの最初のメンバーがリーダー", book.leave(a) == TeamBook.Result.OK
+                && book.teamOf(c).get().leader().equals(c));
+        check("全員抜けるとチームが消える", book.leave(c) == TeamBook.Result.OK && book.teams().size() == 1);
+        check("未所属は脱退できない", book.leave(c) == TeamBook.Result.NOT_IN_TEAM);
+        check("招待のない人は承認できない", book.accept(UUID.randomUUID(), "X") == TeamBook.Result.NOT_INVITED);
 
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");
