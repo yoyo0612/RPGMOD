@@ -1,33 +1,36 @@
 package com.yoyo.rpgmod;
 
-import net.fabricmc.api.ModInitializer;
-import net.fabricmc.fabric.api.itemgroup.v1.ItemGroupEvents;
-import net.minecraft.item.Item;
-import net.minecraft.item.ItemGroups;
-import net.minecraft.item.SwordItem;
-import net.minecraft.registry.Registries;
-import net.minecraft.registry.Registry;
-import net.minecraft.util.Identifier;
+import net.minecraft.world.item.CreativeModeTabs;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.SwordItem;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.neoforge.event.BuildCreativeModeTabContentsEvent;
+import net.neoforged.neoforge.registries.DeferredHolder;
+import net.neoforged.neoforge.registries.DeferredRegister;
 
-public class RpgMod implements ModInitializer {
+@Mod(RpgMod.MOD_ID)
+public class RpgMod {
     public static final String MOD_ID = "rpgmod";
 
+    // アイテム登録用のレジストリ
+    public static final DeferredRegister.Items ITEMS = DeferredRegister.createItems(MOD_ID);
+
     // 勇者の剣: ダイヤモンドの剣より強い攻撃力
-    public static final Item HERO_SWORD = new SwordItem(
-            HeroToolMaterial.INSTANCE,
-            6,      // 攻撃ダメージ（素手ベース）
-            -2.4f,  // 攻撃速度
-            new Item.Settings()
+    public static final DeferredHolder<Item, SwordItem> HERO_SWORD = ITEMS.registerItem(
+            "hero_sword",
+            props -> new SwordItem(HeroTier.INSTANCE, props.sword(HeroTier.INSTANCE, 6, -2.4f))
     );
 
-    @Override
-    public void onInitialize() {
-        Registry.register(Registries.ITEM, new Identifier(MOD_ID, "hero_sword"), HERO_SWORD);
+    public RpgMod(IEventBus modEventBus) {
+        ITEMS.register(modEventBus);
+        modEventBus.addListener(this::addCreative);
+    }
 
-        // クリエイティブのタブ「戦闘」に追加
-        ItemGroupEvents.modifyEntriesEvent(ItemGroups.COMBAT)
-                .register(entries -> entries.add(HERO_SWORD));
-
-        System.out.println("[RPG Mod] 読み込みました");
+    // クリエイティブの「戦闘」タブに追加
+    private void addCreative(BuildCreativeModeTabContentsEvent event) {
+        if (event.getTabKey() == CreativeModeTabs.COMBAT) {
+            event.accept(HERO_SWORD);
+        }
     }
 }

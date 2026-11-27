@@ -1,6 +1,6 @@
 # RPG Mod (rpgmod)
 
-Minecraft 1.20.1 向けの [Fabric](https://fabricmc.net/) MOD です。RPG要素を少しずつ追加していく予定の開発用リポジトリです。
+Minecraft 1.21.1 向けの [NeoForge](https://neoforged.net/) MOD です。RPG要素を少しずつ追加していく予定の開発用リポジトリです。
 
 ## 現在の機能
 
@@ -9,10 +9,9 @@ Minecraft 1.20.1 向けの [Fabric](https://fabricmc.net/) MOD です。RPG要�
 
 ## 動作環境
 
-- Minecraft 1.20.1
-- Fabric Loader 0.15.0 以上
-- [Fabric API](https://modrinth.com/mod/fabric-api)
-- Java 17 以上
+- Minecraft 1.21.1
+- NeoForge 21.1.x 以上
+- Java 21
 
 ## ビルド方法
 
@@ -31,7 +30,6 @@ Minecraft 1.20.1 向けの [Fabric](https://fabricmc.net/) MOD です。RPG要�
 ## 導入方法
 
 1. `build/libs/` の jar ファイルを `.minecraft/mods/` に入れます。
-2. Fabric API も同じフォルダに入れます。
 
 ## ライセンス
 
