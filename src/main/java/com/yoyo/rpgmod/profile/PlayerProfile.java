@@ -3,6 +3,7 @@ package com.yoyo.rpgmod.profile;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import com.yoyo.rpgmod.core.Job;
+import com.yoyo.rpgmod.core.Leveling;
 import com.yoyo.rpgmod.core.Role;
 import com.yoyo.rpgmod.core.Stat;
 
@@ -24,13 +25,19 @@ public final class PlayerProfile {
             Codec.STRING.listOf().optionalFieldOf("roles", List.of()).forGetter(PlayerProfile::roleNames),
             Codec.STRING.optionalFieldOf("job", "").forGetter(PlayerProfile::jobName),
             Codec.INT.listOf().optionalFieldOf("points", List.of()).forGetter(p -> toList(p.points)),
-            Codec.INT.listOf().optionalFieldOf("reduction", List.of()).forGetter(p -> toList(p.reduction))
+            Codec.INT.listOf().optionalFieldOf("reduction", List.of()).forGetter(p -> toList(p.reduction)),
+            Codec.INT.optionalFieldOf("level", 1).forGetter(PlayerProfile::level),
+            Codec.INT.optionalFieldOf("exp", 0).forGetter(PlayerProfile::exp),
+            Codec.INT.optionalFieldOf("unspent", 0).forGetter(PlayerProfile::unspentPoints)
     ).apply(instance, PlayerProfile::fromSaved));
 
     private final List<Role> roles = new ArrayList<>();
     private Job job;
     private final Map<Stat, Integer> points = new EnumMap<>(Stat.class);
     private final Map<Stat, Integer> reduction = new EnumMap<>(Stat.class);
+    private int level = 1;
+    private int exp;
+    private int unspent;
 
     /** アタッチメントの既定値（新規プレイヤー用）。 */
     public PlayerProfile() {
@@ -73,6 +80,42 @@ public final class PlayerProfile {
         roles.clear();
         roles.add(first);
         roles.add(second);
+        return true;
+    }
+
+    // ---- レベル・残りポイント ----
+
+    public int level() {
+        return level;
+    }
+
+    public int exp() {
+        return exp;
+    }
+
+    /** 振り分けていない残りポイント。 */
+    public int unspentPoints() {
+        return unspent;
+    }
+
+    /** 経験値を加え、レベルアップ分のポイントを得る。 */
+    public void addExperience(int amount) {
+        Leveling.Result result = Leveling.gain(level, exp, amount);
+        level = result.level();
+        exp = result.exp();
+        unspent += result.pointsGained();
+    }
+
+    /**
+     * ステータスに1ポイント振り分ける。
+     * ロールを選んでいて、残りポイントがあるときだけ成功する。
+     */
+    public boolean allocate(Stat stat) {
+        if (!hasSelectedRoles() || unspent <= 0) {
+            return false;
+        }
+        points.merge(stat, 1, Integer::sum);
+        unspent--;
         return true;
     }
 
@@ -133,8 +176,12 @@ public final class PlayerProfile {
     }
 
     private static PlayerProfile fromSaved(List<String> roleNames, String jobName,
-                                           List<Integer> points, List<Integer> reduction) {
+                                           List<Integer> points, List<Integer> reduction,
+                                           int level, int exp, int unspent) {
         PlayerProfile profile = new PlayerProfile();
+        profile.level = level;
+        profile.exp = exp;
+        profile.unspent = unspent;
         for (String name : roleNames) {
             profile.roles.add(Role.valueOf(name));
         }

@@ -77,6 +77,15 @@ public final class CoreCheck {
         }
         check("同数のときは全役職が選ばれうる", allSeen);
 
+        // レベルと経験値
+        Leveling.Result one = Leveling.gain(1, 0, 100);
+        check("Lv1 で 100 経験値 → Lv2・ポイント 3", one.level() == 2 && one.exp() == 0 && one.pointsGained() == 3);
+        Leveling.Result multi = Leveling.gain(1, 0, 350);
+        check("Lv1 で 350 経験値 → Lv3（余り 50）", multi.level() == 3 && multi.exp() == 50 && multi.pointsGained() == 6);
+        Leveling.Result capped = Leveling.gain(Leveling.MAX_LEVEL, 0, 999999);
+        check("最大レベルでは経験値を蓄えない", capped.level() == Leveling.MAX_LEVEL && capped.exp() == 0 && capped.pointsGained() == 0);
+        check("必要経験値は 100 × レベル", Leveling.requiredExp(5) == 500);
+
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");
         } else {

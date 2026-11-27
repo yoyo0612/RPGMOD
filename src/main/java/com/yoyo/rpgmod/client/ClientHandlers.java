@@ -1,6 +1,7 @@
 package com.yoyo.rpgmod.client;
 
 import com.yoyo.rpgmod.network.RolePayloads;
+import com.yoyo.rpgmod.network.StatPayloads;
 import net.minecraft.client.Minecraft;
 import net.neoforged.neoforge.network.handling.IPayloadContext;
 
@@ -14,5 +15,9 @@ public final class ClientHandlers {
 
     public static void handleOpenRoleSelect(RolePayloads.OpenRoleSelectPayload payload, IPayloadContext context) {
         context.enqueueWork(() -> Minecraft.getInstance().setScreen(new RoleSelectScreen()));
+    }
+
+    public static void handleSyncStats(StatPayloads.SyncStatsPayload payload, IPayloadContext context) {
+        context.enqueueWork(() -> ClientStats.update(payload));
     }
 }

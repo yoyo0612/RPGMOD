@@ -11,6 +11,18 @@
   "rpgmod.job.harvester": "ハーベスター",
   "rpgmod.job.witch": "ウィッチ",
 
+  "rpgmod.stat.hp": "HP",
+  "rpgmod.stat.atk": "ATK（攻撃力）",
+  "rpgmod.stat.ar": "AR（物理防御）",
+  "rpgmod.stat.mr": "MR（魔法防御）",
+  "rpgmod.stat.mag": "MAG（魔力）",
+  "rpgmod.stat.mp": "MP（魔力量）",
+
+  "rpgmod.screen.stats.title": "ステータス振り分け",
+  "rpgmod.screen.stats.level": "Lv %s　EXP %s",
+  "rpgmod.screen.stats.unspent": "残りポイント: %s",
+  "rpgmod.screen.stats.row": "%s　値: %s　振り分け: %s（1pt = +%s）",
+
   "rpgmod.screen.role.title": "ロールを2つ選んでください",
   "rpgmod.screen.role.count": "選んだロール: %s / 2",
   "rpgmod.screen.role.selected": "[選択中] %s",

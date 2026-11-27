@@ -5,8 +5,10 @@ import com.yoyo.rpgmod.core.DeathPenalty;
 import com.yoyo.rpgmod.core.Job;
 import com.yoyo.rpgmod.core.JobBalancer;
 import com.yoyo.rpgmod.client.ClientHandlers;
+import com.yoyo.rpgmod.client.ClientSetup;
 import com.yoyo.rpgmod.core.Stat;
 import com.yoyo.rpgmod.network.RolePayloads;
+import com.yoyo.rpgmod.network.StatPayloads;
 import com.yoyo.rpgmod.profile.JobCounts;
 import com.yoyo.rpgmod.profile.PlayerProfile;
 import net.minecraft.server.level.ServerPlayer;
@@ -14,8 +16,10 @@ import net.minecraft.world.damagesource.DamageSource;
 import net.minecraft.world.damagesource.DamageTypes;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.LivingEntity;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
@@ -55,6 +59,9 @@ public class RpgMod {
         NeoForge.EVENT_BUS.addListener(this::onIncomingDamage);
         NeoForge.EVENT_BUS.addListener(this::onLivingDeath);
         RoleGate.register();
+        if (FMLEnvironment.dist == Dist.CLIENT) {
+            setupClient(modEventBus);
+        }
     }
 
     /** ロール選択の通信を登録する。 */
@@ -68,6 +75,25 @@ public class RpgMod {
                 RolePayloads.SelectRolesPayload.TYPE,
                 RolePayloads.SelectRolesPayload.STREAM_CODEC,
                 RolePayloads::handleSelectRoles);
+
+        registrar.playToClient(
+                StatPayloads.SyncStatsPayload.TYPE,
+                StatPayloads.SyncStatsPayload.STREAM_CODEC,
+                ClientHandlers::handleSyncStats);
+        registrar.playToServer(
+                StatPayloads.RequestStatsPayload.TYPE,
+                StatPayloads.RequestStatsPayload.STREAM_CODEC,
+                StatPayloads::handleRequest);
+        registrar.playToServer(
+                StatPayloads.AllocateStatPayload.TYPE,
+                StatPayloads.AllocateStatPayload.STREAM_CODEC,
+                StatPayloads::handleAllocate);
+    }
+
+    /** クライアントだけのキー操作を登録する（サーバーでは実行しない）。 */
+    private void setupClient(IEventBus modEventBus) {
+        modEventBus.addListener(ClientSetup::registerKeys);
+        NeoForge.EVENT_BUS.addListener(ClientSetup::onClientTick);
     }
 
     /**
@@ -90,6 +116,7 @@ public class RpgMod {
         if (!profile.hasSelectedRoles()) {
             PacketDistributor.sendToPlayer(player, new RolePayloads.OpenRoleSelectPayload());
         }
+        StatPayloads.sendSync(player);
     }
 
     /**
