@@ -8,12 +8,6 @@ package com.yoyo.rpgmod.combat;
  */
 public final class DamageCalculator {
 
-    /** 防御ポイント 1 あたりの軽減率（1%）。 */
-    public static final double REDUCTION_PER_POINT = 0.01;
-
-    /** 軽減率の上限（50%）。 */
-    public static final double MAX_REDUCTION = 0.5;
-
     private DamageCalculator() {
     }
 
@@ -25,14 +19,13 @@ public final class DamageCalculator {
     }
 
     /**
-     * 軽減率 = 防御ポイント × 1%（上限 50%）。
-     * 防御ポイントは AR（物理）または MR（魔法）。負の値は 0 として扱う。
+     * 受けるダメージの倍率 = 100 ÷ （100 + 防御値）。
+     * 防御値は AR（物理）または MR（魔法）。負の値は 0 として扱う（倍率 1.0）。
+     * 防御値が増えるほど効果は小さくなり、上限はない。
      */
-    public static double reduction(int resistPoints) {
-        if (resistPoints <= 0) {
-            return 0.0;
-        }
-        return Math.min(resistPoints * REDUCTION_PER_POINT, MAX_REDUCTION);
+    public static double damageTakenRate(int resistPoints) {
+        int points = Math.max(0, resistPoints);
+        return 100.0 / (100.0 + points);
     }
 
     /**
@@ -41,7 +34,8 @@ public final class DamageCalculator {
      * <pre>
      * 物理ダメージ = 物理部分 × 補正
      * 魔法ダメージ = 魔法部分 × 補正
-     * 最終ダメージ = 物理ダメージ × (1 − 物理の軽減率) + 魔法ダメージ × (1 − 魔法の軽減率)
+     * 最終ダメージ = 物理ダメージ × 物理の倍率 + 魔法ダメージ × 魔法の倍率
+     *   物理の倍率 = 100 ÷ (100 + AR)、魔法の倍率 = 100 ÷ (100 + MR)
      * </pre>
      *
      * 小数点以下は切り捨て、攻撃に正のダメージがあれば最低 1 ダメージ。
@@ -57,8 +51,8 @@ public final class DamageCalculator {
         if (physicalPart + magicPart <= 0) {
             return 0;
         }
-        double physical = physicalPart * multiplier * (1.0 - reduction(ar));
-        double magic = magicPart * multiplier * (1.0 - reduction(mr));
+        double physical = physicalPart * multiplier * damageTakenRate(ar);
+        double magic = magicPart * multiplier * damageTakenRate(mr);
         // 浮動小数点の誤差（例: 6.9999...）で切り捨てがずれないよう微小量を足す
         int result = (int) Math.floor(physical + magic + 1e-9);
         return Math.max(1, result);
