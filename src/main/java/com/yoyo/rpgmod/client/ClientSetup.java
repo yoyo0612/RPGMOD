@@ -26,7 +26,7 @@ public final class ClientSetup {
             "key.rpgmod.open_team",
             KeyConflictContext.IN_GAME,
             InputConstants.Type.KEYSYM,
-            GLFW.GLFW_KEY_T,
+            GLFW.GLFW_KEY_G,
             "key.categories.rpgmod");
 
     private ClientSetup() {
@@ -37,7 +37,7 @@ public final class ClientSetup {
         event.register(OPEN_TEAM);
     }
 
-    /** K でステータス画面、T でチーム画面を開く。他の画面が開いているときは開かない。 */
+    /** K でステータス画面、G でチーム画面を開く。他の画面が開いているときは開かない。 */
     public static void onClientTick(ClientTickEvent.Post event) {
         Minecraft minecraft = Minecraft.getInstance();
         while (OPEN_STATS.consumeClick()) {
