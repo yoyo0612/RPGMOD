@@ -85,10 +85,12 @@ public class RpgMod {
     /** ロール選択の通信を登録する。 */
     private void registerPayloads(RegisterPayloadHandlersEvent event) {
         PayloadRegistrar registrar = event.registrar("1");
+        // クライアント専用の処理は、クライアントでだけ参照する（サーバーで読み込むと失敗する）
+        boolean client = FMLEnvironment.dist == Dist.CLIENT;
         registrar.playToClient(
                 RolePayloads.OpenRoleSelectPayload.TYPE,
                 RolePayloads.OpenRoleSelectPayload.STREAM_CODEC,
-                ClientHandlers::handleOpenRoleSelect);
+                client ? ClientHandlers::handleOpenRoleSelect : (payload, context) -> { });
         registrar.playToServer(
                 RolePayloads.SelectRolesPayload.TYPE,
                 RolePayloads.SelectRolesPayload.STREAM_CODEC,
@@ -97,7 +99,7 @@ public class RpgMod {
         registrar.playToClient(
                 StatPayloads.SyncStatsPayload.TYPE,
                 StatPayloads.SyncStatsPayload.STREAM_CODEC,
-                ClientHandlers::handleSyncStats);
+                client ? ClientHandlers::handleSyncStats : (payload, context) -> { });
         registrar.playToServer(
                 StatPayloads.RequestStatsPayload.TYPE,
                 StatPayloads.RequestStatsPayload.STREAM_CODEC,
@@ -110,7 +112,7 @@ public class RpgMod {
         registrar.playToClient(
                 TeamPayloads.TeamSyncPayload.TYPE,
                 TeamPayloads.TeamSyncPayload.STREAM_CODEC,
-                ClientHandlers::handleSyncTeam);
+                client ? ClientHandlers::handleSyncTeam : (payload, context) -> { });
         registrar.playToServer(
                 TeamPayloads.TeamActionPayload.TYPE,
                 TeamPayloads.TeamActionPayload.STREAM_CODEC,
