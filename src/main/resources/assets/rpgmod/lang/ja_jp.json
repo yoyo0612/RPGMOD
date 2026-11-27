@@ -20,6 +20,12 @@
 
   "rpgmod.hud.hp": "HP %s / %s",
 
+  "rpgmod.home.set": "家を登録しました: (%s, %s, %s) 〜 (%s, %s, %s)",
+  "rpgmod.home.clear": "家を消しました",
+  "rpgmod.home.protected": "この範囲は家として保護されています",
+  "rpgmod.home.error.not_builder": "家を登録できるのはビルダーだけです",
+  "rpgmod.home.error.none": "登録されている家はありません",
+
   "rpgmod.screen.team.title": "チーム",
   "rpgmod.screen.team.name_hint": "チーム名（12文字まで）",
   "rpgmod.screen.team.create": "チームを作る",

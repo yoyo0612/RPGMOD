@@ -20,6 +20,12 @@
 
   "rpgmod.hud.hp": "HP %s / %s",
 
+  "rpgmod.home.set": "Home registered: (%s, %s, %s) to (%s, %s, %s)",
+  "rpgmod.home.clear": "Home cleared",
+  "rpgmod.home.protected": "This area is protected as a home",
+  "rpgmod.home.error.not_builder": "Only Builders can register a home",
+  "rpgmod.home.error.none": "You have no registered home",
+
   "rpgmod.screen.team.title": "Team",
   "rpgmod.screen.team.name_hint": "Team name (up to 12 characters)",
   "rpgmod.screen.team.create": "Create team",

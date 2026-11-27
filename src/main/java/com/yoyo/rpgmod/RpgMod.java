@@ -10,6 +10,8 @@ import com.yoyo.rpgmod.client.ClientHandlers;
 import com.yoyo.rpgmod.client.ClientSetup;
 import com.yoyo.rpgmod.client.HealthHud;
 import com.yoyo.rpgmod.core.Stat;
+import com.yoyo.rpgmod.home.HomeCommands;
+import com.yoyo.rpgmod.home.HomeProtection;
 import com.yoyo.rpgmod.network.RolePayloads;
 import com.yoyo.rpgmod.network.StatPayloads;
 import com.yoyo.rpgmod.network.TeamPayloads;
@@ -28,6 +30,7 @@ import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.loading.FMLEnvironment;
 import net.neoforged.neoforge.attachment.AttachmentType;
 import net.neoforged.neoforge.common.NeoForge;
+import net.neoforged.neoforge.event.RegisterCommandsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDeathEvent;
 import net.neoforged.neoforge.event.entity.living.LivingDropsEvent;
 import net.neoforged.neoforge.event.entity.living.LivingIncomingDamageEvent;
@@ -70,6 +73,9 @@ public class RpgMod {
         NeoForge.EVENT_BUS.addListener(this::onRespawn);
         NeoForge.EVENT_BUS.addListener(this::onMobDrops);
         NeoForge.EVENT_BUS.addListener(TeamEffects::blockFriendlyExplosion);
+        NeoForge.EVENT_BUS.addListener(HomeProtection::onBlockBreak);
+        NeoForge.EVENT_BUS.addListener(HomeProtection::onBlockPlace);
+        NeoForge.EVENT_BUS.addListener(this::onRegisterCommands);
         RoleGate.register();
         if (FMLEnvironment.dist == Dist.CLIENT) {
             setupClient(modEventBus);
@@ -227,6 +233,11 @@ public class RpgMod {
             recipient.setData(PROFILE.get(), profile);
             StatPayloads.sendSync(recipient);
         }
+    }
+
+    /** 専用コマンド（/rpgmod home ...）を登録する。 */
+    private void onRegisterCommands(RegisterCommandsEvent event) {
+        HomeCommands.register(event.getDispatcher());
     }
 
     /** 戦利品をチームの全員に配る（撃破者以外はコピーを受け取る）。 */

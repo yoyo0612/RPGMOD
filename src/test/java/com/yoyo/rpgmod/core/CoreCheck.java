@@ -119,6 +119,21 @@ public final class CoreCheck {
         check("未所属は脱退できない", book.leave(c) == TeamBook.Result.NOT_IN_TEAM);
         check("招待のない人は承認できない", book.accept(UUID.randomUUID(), "X") == TeamBook.Result.NOT_INVITED);
 
+        // 家（保護範囲）
+        HomeBook homes = new HomeBook();
+        UUID owner = UUID.randomUUID();
+        homes.set(owner, "minecraft:overworld", 10, 70, 10, 0, 64, 0);
+        HomeBook.Box box = homes.homeOf(owner).orElseThrow();
+        check("対角の順序を問わず正規化される", box.minX() == 0 && box.maxX() == 10 && box.minY() == 64 && box.maxY() == 70);
+        check("範囲の境界を含む", homes.ownersContaining("minecraft:overworld", 0, 64, 0).contains(owner)
+                && homes.ownersContaining("minecraft:overworld", 10, 70, 10).contains(owner));
+        check("範囲の外は含まない", homes.ownersContaining("minecraft:overworld", 11, 70, 10).isEmpty());
+        check("別の次元は含まない", homes.ownersContaining("minecraft:the_nether", 5, 65, 5).isEmpty());
+        homes.set(owner, "minecraft:overworld", 100, 70, 100, 90, 80, 90);
+        check("登録し直すと置き換わる", homes.ownersContaining("minecraft:overworld", 5, 65, 5).isEmpty()
+                && homes.ownersContaining("minecraft:overworld", 95, 75, 95).contains(owner));
+        check("家を消せる", homes.clear(owner) && homes.homeOf(owner).isEmpty());
+
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");
         } else {
