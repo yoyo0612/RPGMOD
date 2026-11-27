@@ -1,0 +1,50 @@
+plugins {
+    id 'java'
+    id 'net.neoforged.moddev' version '2.0.149'
+}
+
+version = project.mod_version
+group = project.mod_group_id
+
+base {
+    archivesName = project.mod_id
+}
+
+java {
+    toolchain.languageVersion = JavaLanguageVersion.of(21)
+    withSourcesJar()
+}
+
+neoForge {
+    version = project.neo_version
+
+    runs {
+        client {
+            client()
+        }
+        server {
+            server()
+            programArgument '--nogui'
+        }
+    }
+
+    mods {
+        "${project.mod_id}" {
+            sourceSet sourceSets.main
+        }
+    }
+}
+
+tasks.withType(JavaCompile).configureEach {
+    options.encoding = 'UTF-8'
+}
+
+processResources {
+    inputs.property 'version', project.version
+    inputs.property 'mod_id', project.mod_id
+
+    filesMatching('META-INF/neoforge.mods.toml') {
+        expand 'version': project.version, 'mod_id': project.mod_id, 'mod_name': project.mod_name,
+               'mod_license': project.mod_license, 'mod_description': project.mod_description
+    }
+}
