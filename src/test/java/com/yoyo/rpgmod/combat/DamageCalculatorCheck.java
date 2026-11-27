@@ -54,8 +54,9 @@ public final class DamageCalculatorCheck {
         check("浮動小数点誤差で切り捨てがずれない", DamageCalculator.finalDamage(18, 0, 1.0, 20, 0) == 15);
 
         // 回復: MAG 10、回復補正 +20% → 12
-        check("回復 MAG 10 + 20% → 12", DamageCalculator.healAmount(10, 0.2) == 12);
-        check("回復 MAG 0 → 0", DamageCalculator.healAmount(0, 0.2) == 0);
+        check("回復 魔法 1.0・MAG 10 + 20% → 12", DamageCalculator.healAmount(10, 1.0, 0.2) == 12);
+        check("回復 ポーション 0.5・MAG 10 → 5", DamageCalculator.healAmount(10, 0.5, 0.0) == 5);
+        check("回復 MAG 0 → 0", DamageCalculator.healAmount(0, 1.0, 0.2) == 0);
 
         if (failures == 0) {
             System.out.println("OK: すべての確認が成功しました");

@@ -59,16 +59,17 @@ public final class DamageCalculator {
     }
 
     /**
-     * 回復量 = MAG × （1 + 回復量の補正%）。防御の影響は受けない。
+     * 回復量 = MAG × 手段係数 × （1 + 回復量の補正%）。防御の影響は受けない。
      *
-     * @param mag         MAG
-     * @param healBonus   回復量の補正（例: +20% なら 0.2）
+     * @param mag               MAG
+     * @param methodCoefficient 回復の手段ごとの係数（魔法による回復は 1.0、ポーションは 0.5 など）
+     * @param healBonus         回復量の補正（例: +20% なら 0.2）
      * @return 回復量（整数、切り捨て）
      */
-    public static int healAmount(int mag, double healBonus) {
-        if (mag <= 0) {
+    public static int healAmount(int mag, double methodCoefficient, double healBonus) {
+        if (mag <= 0 || methodCoefficient <= 0) {
             return 0;
         }
-        return (int) Math.floor(mag * (1.0 + healBonus) + 1e-9);
+        return (int) Math.floor(mag * methodCoefficient * (1.0 + healBonus) + 1e-9);
     }
 }
